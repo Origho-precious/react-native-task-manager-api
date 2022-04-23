@@ -1,7 +1,7 @@
 import { Response, Request } from "express";
 import bcrypt from "bcrypt";
-import { IRequest } from "../interfaces/IRequest.interface.js";
-import User from "../models/user.model.js";
+import { IRequest } from "../interfaces/IRequest.interface";
+import User from "../models/user.model";
 import { generateToken } from "../utils/generateToken";
 
 export const authenticateUser = async (req: Request, res: Response) => {
@@ -23,7 +23,6 @@ export const authenticateUser = async (req: Request, res: Response) => {
 					token,
 				});
 			} else {
-				console.log(err?.message);
 				res.status(401).json({ message: "Incorrect email or password!" });
 			}
 		});
@@ -52,7 +51,6 @@ export const createUser = async (req: IRequest, res: Response) => {
 				token: generateToken(user._id),
 			});
 		} catch (error: any) {
-			console.log(error?.message);
 			res.status(201).json({
 				message: "Something went wrong!",
 			});
