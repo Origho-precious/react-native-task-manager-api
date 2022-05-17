@@ -48,7 +48,7 @@ export const createUser = async (req: IRequest, res: Response) => {
 				id: user._id,
 				fullName: user.fullName,
 				email: user.email,
-				token: generateToken(user._id),
+				authToken: generateToken(user._id),
 			});
 		} catch (error: any) {
 			res.status(201).json({

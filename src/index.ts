@@ -17,7 +17,7 @@ app.use("/api/users", userRoutes);
 
 if (process.env.NODE_ENV === "dev") {
 	app.use("/", (_req, res) => {
-		res.send(`Task manager API running on port ${process.env.PORT}`);
+		res.send(`Organizo API running on port ${process.env.PORT}`);
 	});
 }
 
