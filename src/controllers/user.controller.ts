@@ -18,7 +18,7 @@ export const authenticateUser = async (req: Request, res: Response) => {
 				const token = generateToken(user._id);
 				res.status(200).json({
 					id: user._id,
-					name: user.name,
+					fullName: user.fullName,
 					email: user.email,
 					token,
 				});
