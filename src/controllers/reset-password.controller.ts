@@ -19,15 +19,15 @@ export const forgotPassword = async (req: Request, res: Response) => {
 	if (!userExists) {
 		res.status(404).json({ message: "Account with this email not found!" });
 	} else {
-		const token = generateResetPasswordToken(email);
-
 		try {
+			const token = generateResetPasswordToken(email);
+
 			await mailer.forgotPassword(email, token);
-      await VerificationToken.create({ token, type: "reset-password" });
-      
+			await VerificationToken.create({ token, type: "reset-password" });
+
 			res.status(200).json({ message: "Reset password link sent!" });
-		} catch (error) {
-			console.log(error);
+		} catch (error: any) {
+			console.log(error.message);
 			res.status(500).json({ message: "Something went wrong!" });
 		}
 	}
@@ -41,17 +41,22 @@ export const resetPassword = async (req: IRequest, res: Response) => {
 	if (!password) {
 		res.status(401).json({ message: "Please, enter your new password" });
 	} else {
-		const user = await User.findOne({ email });
+		try {
+			const user = await User.findOne({ email });
 
-		if (user) {
-			const hashPassword = bcrypt.hashSync(password, 10);
-			user.password = hashPassword;
-			await user.save();
-      await VerificationToken.deleteOne({ token });
-      
-			res.status(200).json({ message: "Password reset successful!" });
-		} else {
-			res.status(404).json({ message: "Account with this email not found!" });
+			if (user) {
+				const hashPassword = bcrypt.hashSync(password, 10);
+				user.password = hashPassword;
+				await user.save();
+				await VerificationToken.deleteOne({ token });
+
+				res.status(200).json({ message: "Password reset successful!" });
+			} else {
+				res.status(404).json({ message: "Account with this email not found!" });
+			}
+		} catch (error: any) {
+			console.log(error.message);
+			res.status(500).json({ message: "Something went wrong!" });
 		}
 	}
 };

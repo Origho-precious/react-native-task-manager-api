@@ -5,7 +5,7 @@ class Mailer {
 	private client: any;
 
 	constructor() {
-		this.client = mailchimp(process.env.MANDRILL_API_KEY as string);
+		this.client = mailchimp("jiciSWULFA6Lu-FWvi2bFw");
 	}
 
 	async sendEmail(
@@ -32,7 +32,7 @@ class Mailer {
 				});
 			}
 			const message = {
-				from_name: "Risecoin",
+				from_name: "Organizo App",
 				from_email: from,
 				subject: subject,
 				html: body,
@@ -52,13 +52,16 @@ class Mailer {
 			if (res[0]?.status === "rejected") {
 				throw new Error("email rejected");
 			}
-		} catch (error) {
+		} catch (error: any) {
 			throw error;
 		}
 	}
 
 	async forgotPassword(email: string, token: string) {
-		const href = `https://app.risecoin.xyz/redirect?token=${token}&exp=${new Date().getTime()}`;
+		const href =
+			process?.env.NODE_ENV === "prod"
+				? `organizo://NewPassword/${token}`
+				: `exp://192.168.1.180:19001/--/NewPassword/${token}`;
 
 		const subject = "Reset Password";
 		const msg = `Click <a href=${href}>here</a> to reset your password. <br /> <br /> Note that the link will be invalid in 15mins time.`;
@@ -67,8 +70,8 @@ class Mailer {
 
 		try {
 			await this.sendEmail(email, subject, body);
-		} catch (error) {
-			console.log(error);
+		} catch (error: any) {
+			console.log(error.message);
 			throw error;
 		}
 	}
