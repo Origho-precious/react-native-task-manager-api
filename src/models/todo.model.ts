@@ -1,9 +1,9 @@
 import Mongoose from "mongoose";
-import User from "./user.model";
+// import User from "./user.model";
 
 const { Schema } = Mongoose;
 
-const taskSchema = new Schema(
+const todoSchema = new Schema(
 	{
 		creator: {
 			type: Schema.Types.ObjectId,
@@ -25,11 +25,11 @@ const taskSchema = new Schema(
 			required: true,
 			trim: true,
 		},
-		users: [User],
+		// users: [User],
 	},
 	{ timestamps: true }
 );
 
-const Task = Mongoose.model("Task", taskSchema);
+const Todo = Mongoose.model("Todo", todoSchema);
 
-export default Task;
+export default Todo;
