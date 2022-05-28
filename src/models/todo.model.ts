@@ -19,10 +19,16 @@ const todoSchema = new Schema(
 			type: String,
 			required: true,
 			trim: true,
+			enum: ["personal", "work", "shared"],
+		},
+		date: {
+			type: Date,
+			required: true,
+			trim: true,
 		},
 		isCompleted: {
 			type: Boolean,
-			required: true,
+			required: false,
 			trim: true,
 		},
 		// users: [User],
