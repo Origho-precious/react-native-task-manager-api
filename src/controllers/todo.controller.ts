@@ -14,19 +14,32 @@ export const createTodo = async (req: IRequest, res: Response) => {
 				text,
 				date,
 				type,
+				isCompleted: false,
 			};
 
-			const todo = await Todo.create(todoData);
+			await Todo.create(todoData);
 
-			res.status(201).json({
-				id: todo._id,
-				creator: todo.creator,
-				text: todo.text,
-				date: todo.date,
-				type: todo.type,
+			const response = await Todo.find({
+				creator: req?.decoded?.id,
+				isCompleted: false,
+			}).populate("creator", "id fullName email");
+
+			const todos = response.map((todo) => {
+				return {
+					id: todo._id,
+					creator: todo.creator,
+					text: todo.text,
+					date: todo.date,
+					type: todo.type,
+					isCompleted: todo.isCompleted,
+				};
 			});
-		} catch (error) {
-			res.status(500).json({ message: "Something went wrong!" });
+
+			res.status(201).json(todos);
+		} catch (error: any) {
+			res.status(500).json({
+				message: error?._message ? error?._message : "Something went wrong!",
+			});
 		}
 	}
 };
@@ -37,7 +50,7 @@ export const updateTodo = async (req: IRequest, res: Response) => {
 
 	if (!id) {
 		res.status(422).json({ message: "Required property not found!" });
-	} else if (!text || !date || !type) {
+	} else if (!text && !date && !type) {
 		res.status(422).json({ message: "Required field(s) not found!" });
 	} else {
 		try {
@@ -58,7 +71,10 @@ export const updateTodo = async (req: IRequest, res: Response) => {
 
 				await todo.save();
 
-				const response = await Todo.find({ creator: req?.decoded?.id });
+				const response = await Todo.find({
+					creator: req?.decoded?.id,
+					isCompleted: false,
+				}).populate("creator", "id fullName email");
 
 				const todos = response.map((todo) => {
 					return {
@@ -67,6 +83,7 @@ export const updateTodo = async (req: IRequest, res: Response) => {
 						text: todo.text,
 						date: todo.date,
 						type: todo.type,
+						isCompleted: todo.isCompleted,
 					};
 				});
 
@@ -90,11 +107,14 @@ export const markTodoAsCompleted = async (req: IRequest, res: Response) => {
 			const todo = await Todo.findById(id);
 
 			if (todo) {
-				todo.completed = true;
+				todo.isCompleted = true;
 
 				await todo.save();
 
-				const response = await Todo.find({ creator: req?.decoded?.id });
+				const response = await Todo.find({
+					creator: req?.decoded?.id,
+					isCompleted: false,
+				}).populate("creator", "id fullName email");
 
 				const todos = response.map((todo) => {
 					return {
@@ -103,7 +123,7 @@ export const markTodoAsCompleted = async (req: IRequest, res: Response) => {
 						text: todo.text,
 						date: todo.date,
 						type: todo.type,
-						completed: todo.completed,
+						isCompleted: todo.isCompleted,
 					};
 				});
 
@@ -119,19 +139,23 @@ export const markTodoAsCompleted = async (req: IRequest, res: Response) => {
 
 export const fetchTodosByCreator = async (req: IRequest, res: Response) => {
 	try {
-		const todos = await Todo.find({ creator: req?.decoded?.id });
+		const response = await Todo.find({
+			creator: req?.decoded?.id,
+			isCompleted: false,
+		}).populate("creator", "id fullName email");
 
-		const response = todos.map((todo) => {
+		const todos = response.map((todo) => {
 			return {
 				id: todo._id,
 				creator: todo.creator,
 				text: todo.text,
 				date: todo.date,
 				type: todo.type,
+				isCompleted: todo.isCompleted,
 			};
 		});
 
-		res.status(200).json(response);
+		res.status(200).json(todos);
 	} catch (error) {
 		res.status(500).json({ message: "Something went wrong!" });
 	}
@@ -149,7 +173,10 @@ export const deleteTodo = async (req: IRequest, res: Response) => {
 			if (todo) {
 				await todo.remove();
 
-				const response = await Todo.find({ creator: req?.decoded?.id });
+				const response = await Todo.find({
+					creator: req?.decoded?.id,
+					isCompleted: false,
+				}).populate("creator", "id fullName email");
 
 				const todos = response.map((todo) => {
 					return {
@@ -158,6 +185,7 @@ export const deleteTodo = async (req: IRequest, res: Response) => {
 						text: todo.text,
 						date: todo.date,
 						type: todo.type,
+						isCompleted: todo.isCompleted,
 					};
 				});
 
@@ -168,5 +196,33 @@ export const deleteTodo = async (req: IRequest, res: Response) => {
 		} catch (error) {
 			res.status(500).json({ message: "Something went wrong!" });
 		}
+	}
+};
+
+// fetch completed todos by creator
+export const fetchCompletedTodosByCreator = async (
+	req: IRequest,
+	res: Response
+) => {
+	try {
+		const response = await Todo.find({
+			creator: req?.decoded?.id,
+			isCompleted: true,
+		}).populate("creator", "id fullName email");
+
+		const todos = response.map((todo) => {
+			return {
+				id: todo._id,
+				creator: todo.creator,
+				text: todo.text,
+				date: todo.date,
+				type: todo.type,
+				isCompleted: todo.isCompleted,
+			};
+		});
+
+		res.status(200).json(todos);
+	} catch (error) {
+		res.status(500).json({ message: "Something went wrong!" });
 	}
 };
